@@ -65,4 +65,14 @@ enum Error : uint16_t {
     ERR_INVALID_COMMAND = 0xE7,
 };
 
+enum Event : uint16_t {
+    EVT_MESSAGE_RECEIVED = 0xF0,
+    EVT_TEAM_CREATED = 0xF1,
+    EVT_CHANNEL_CREATED = 0xF2,
+    EVT_THREAD_CREATED = 0xF3,
+    EVT_REPLY_CREATED = 0xF4,
+    EVT_USER_LOGGED_IN = 0xF5,
+    EVT_USER_LOGGED_OUT = 0xF6,
+};
+
 #endif
