@@ -35,7 +35,9 @@ Tous les entiers sont en **network byte order** (big-endian). Utiliser `htons()`
 | 0x05 | CMD_SEND         | receiver_uuid (36) + body (512, padded null)     |
 | 0x06 | CMD_MESSAGES     | user_uuid (36 oct)                               |
 | 0x07 | CMD_SUBSCRIBE    | team_uuid (36 oct)                                |
-| 0x08 | CMD_SUBSCRIBED   | team_uuid (36 oct) OU (vide)                     |
+| 0x08 | CMD_SUBSCRIBED   | flag (1 oct) + team_uuid (36 oct) si flag=0x01   |
+
+> CMD_SUBSCRIBED : si flag=0x00 → liste les teams auxquelles le client est subscribed (réponse RES_SUBSCRIBED_TEAMS). Si flag=0x01 + team_uuid → liste les users subscribed à cette team (réponse RES_SUBSCRIBED_USERS).
 | 0x09 | CMD_UNSUBSCRIBE  | team_uuid (36 oct)                                |
 | 0x0A | CMD_USE          | voir section 5                                   |
 | 0x0B | CMD_CREATE       | voir section 6                                   |
@@ -53,7 +55,7 @@ Tous les entiers sont en **network byte order** (big-endian). Utiliser `htons()`
 | 0x12 | RES_USERS_LIST         | count (4 oct) + [user_uuid (36) + name (32) + status (1)]* |
 | 0x13 | RES_USER_INFO          | user_uuid (36) + name (32) + status (1)          |
 | 0x14 | RES_SEND_OK            | (vide)                                           |
-| 0x15 | RES_MESSAGES_LIST      | count (4) + [sender_uuid (36) + timestamp (8) + body (512)]* |
+| 0x15 | RES_MESSAGES_LIST      | count (4) + [sender_uuid (36) + receiver_uuid (36) + timestamp (8) + body (512)]* |
 | 0x16 | RES_SUBSCRIBE_OK       | team_uuid (36)                                   |
 | 0x17 | RES_SUBSCRIBED_TEAMS   | count (4) + [team_uuid (36) + name (32) + desc (255)]* |
 | 0x18 | RES_SUBSCRIBED_USERS   | count (4) + [user_uuid (36) + name (32) + status (1)]* |
@@ -107,9 +109,15 @@ La commande USE définit le contexte courant du client côté serveur. Le payloa
 | Team + Channel    | level (1 oct) = 0x02 + team_uuid (36) + channel_uuid (36) |
 | Team + Chan + Thread | level (1 oct) = 0x03 + team_uuid (36) + channel_uuid (36) + thread_uuid (36) |
 
-Le serveur répond `RES_TEAM_INFO`, `RES_CHANNEL_INFO`, `RES_THREAD_INFO` ou `ERR_UNKNOWN_*` selon le niveau.
+Le serveur répond selon le niveau :
+- level 0x00 (reset) : pas de réponse spécifique, le contexte est simplement effacé. Le serveur répond avec un `RES_USER_DETAILS` contenant les infos du user logged.
+- level 0x01 : `RES_TEAM_INFO` ou `ERR_UNKNOWN_TEAM`
+- level 0x02 : `RES_CHANNEL_INFO` ou `ERR_UNKNOWN_CHANNEL`
+- level 0x03 : `RES_THREAD_INFO` ou `ERR_UNKNOWN_THREAD`
 
 Le serveur stocke le contexte USE par client. Les commandes `/create`, `/list` et `/info` l'utilisent.
+
+Pour `/info` sans contexte USE, le serveur répond avec `RES_USER_DETAILS` (uuid + name du user logged).
 
 ## 6. Commande CREATE (0x0B)
 
