@@ -54,4 +54,15 @@ enum Response : uint16_t {
     RES_USER_DETAILS = 0x25,
 };
 
+enum Error : uint16_t {
+    ERR_UNAUTHORIZED = 0xE0,
+    ERR_UNKNOWN_TEAM = 0xE1,
+    ERR_UNKNOWN_CHANNEL = 0xE2,
+    ERR_UNKNOWN_THREAD = 0xE3,
+    ERR_UNKNOWN_USER = 0xE4,
+    ERR_ALREADY_EXISTS = 0xE5,
+    ERR_NOT_SUBSCRIBED = 0xE6,
+    ERR_INVALID_COMMAND = 0xE7,
+};
+
 #endif
