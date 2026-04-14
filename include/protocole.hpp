@@ -75,4 +75,11 @@ enum Event : uint16_t {
     EVT_USER_LOGGED_OUT = 0xF6,
 };
 
+enum UseLevel : uint8_t {
+    USE_NONE = 0x00,
+    USE_TEAM = 0x01,
+    USE_CHANNEL = 0x02,
+    USE_THREAD = 0x03,
+};
+
 #endif
