@@ -54,4 +54,32 @@ enum Response : uint16_t {
     RES_USER_DETAILS = 0x25,
 };
 
+enum Error : uint16_t {
+    ERR_UNAUTHORIZED = 0xE0,
+    ERR_UNKNOWN_TEAM = 0xE1,
+    ERR_UNKNOWN_CHANNEL = 0xE2,
+    ERR_UNKNOWN_THREAD = 0xE3,
+    ERR_UNKNOWN_USER = 0xE4,
+    ERR_ALREADY_EXISTS = 0xE5,
+    ERR_NOT_SUBSCRIBED = 0xE6,
+    ERR_INVALID_COMMAND = 0xE7,
+};
+
+enum Event : uint16_t {
+    EVT_MESSAGE_RECEIVED = 0xF0,
+    EVT_TEAM_CREATED = 0xF1,
+    EVT_CHANNEL_CREATED = 0xF2,
+    EVT_THREAD_CREATED = 0xF3,
+    EVT_REPLY_CREATED = 0xF4,
+    EVT_USER_LOGGED_IN = 0xF5,
+    EVT_USER_LOGGED_OUT = 0xF6,
+};
+
+enum UseLevel : uint8_t {
+    USE_NONE = 0x00,
+    USE_TEAM = 0x01,
+    USE_CHANNEL = 0x02,
+    USE_THREAD = 0x03,
+};
+
 #endif
