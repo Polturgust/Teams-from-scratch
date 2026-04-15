@@ -42,3 +42,34 @@ struct channel_t
     std::vector<thread_t> threads;
 };
 
+struct team_t
+{
+    char uuid[UUID_STR_LEN];
+    char name[MAX_NAME_LENGTH];
+    char description[MAX_DESCRIPTION_LENGTH];
+    std::vector<channel_t> channels;
+    std::vector<std::string> member_uuids;
+};
+
+struct message_t
+{
+    char sender_uuid[UUID_STR_LEN];
+    char receiver_uuid[UUID_STR_LEN];
+    char body[MAX_BODY_LENGTH];
+    time_t timestamp;
+};
+
+struct user_t
+{
+    char uuid[UUID_STR_LEN];
+    char name[MAX_NAME_LENGTH];
+    bool is_logged;
+    int fd;
+};
+
+struct server_data_t
+{
+    std::vector<user_t> users;
+    std::vector<team_t> teams;
+    std::vector<message_t> messages;
+};
