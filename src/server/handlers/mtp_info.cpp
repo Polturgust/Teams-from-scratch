@@ -30,7 +30,7 @@ Result Business::handle_info(int fd)
 
     const std::string user_uuid = it->second;
     const auto ctx_it = _data.client_contexts.find(fd);
-    
+
     if (ctx_it == _data.client_contexts.end()) {
         res.response.code = ERR_INVALID_COMMAND;
         res.response.bytes = make_message(res.response.code, {});
@@ -40,7 +40,6 @@ Result Business::handle_info(int fd)
     const client_context_t &ctx = ctx_it->second;
     const uint8_t level = ctx.level;
 
-    // INFO_USER: return current user details
     if (level == USE_NONE) {
         user_t *user = find_user_by_uuid(_data, user_uuid);
         std::vector<uint8_t> payload;
@@ -61,7 +60,6 @@ Result Business::handle_info(int fd)
         return res;
     }
 
-    // INFO_TEAM: return current team details
     if (level == USE_TEAM) {
         team_t *team = find_team_by_uuid(_data, std::string_view(ctx.team_uuid, kUuidWireSize));
         if (!team) {
@@ -81,7 +79,6 @@ Result Business::handle_info(int fd)
         return res;
     }
 
-    // INFO_CHANNEL: return current channel details
     if (level == USE_CHANNEL) {
         team_t *team = find_team_by_uuid(_data, std::string_view(ctx.team_uuid, kUuidWireSize));
         if (!team) {
@@ -90,13 +87,7 @@ Result Business::handle_info(int fd)
             return res;
         }
 
-        channel_t *channel = nullptr;
-        for (auto &c : team->channels) {
-            if (std::string_view(c.uuid, kUuidWireSize) == std::string_view(ctx.channel_uuid, kUuidWireSize)) {
-                channel = &c;
-                break;
-            }
-        }
+        channel_t *channel = find_channel_by_uuid(*team, std::string_view(ctx.channel_uuid, kUuidWireSize));
 
         if (!channel) {
             res.response.code = ERR_UNKNOWN_CHANNEL;
@@ -115,7 +106,6 @@ Result Business::handle_info(int fd)
         return res;
     }
 
-    // INFO_THREAD: return current thread details
     if (level == USE_THREAD) {
         team_t *team = find_team_by_uuid(_data, std::string_view(ctx.team_uuid, kUuidWireSize));
         if (!team) {
@@ -124,13 +114,7 @@ Result Business::handle_info(int fd)
             return res;
         }
 
-        channel_t *channel = nullptr;
-        for (auto &c : team->channels) {
-            if (std::string_view(c.uuid, kUuidWireSize) == std::string_view(ctx.channel_uuid, kUuidWireSize)) {
-                channel = &c;
-                break;
-            }
-        }
+        channel_t *channel = find_channel_by_uuid(*team, std::string_view(ctx.channel_uuid, kUuidWireSize));
 
         if (!channel) {
             res.response.code = ERR_UNKNOWN_CHANNEL;
@@ -138,13 +122,7 @@ Result Business::handle_info(int fd)
             return res;
         }
 
-        thread_t *thread = nullptr;
-        for (auto &t : channel->threads) {
-            if (std::string_view(t.uuid, kUuidWireSize) == std::string_view(ctx.thread_uuid, kUuidWireSize)) {
-                thread = &t;
-                break;
-            }
-        }
+        thread_t *thread = find_thread_by_uuid(*channel, std::string_view(ctx.thread_uuid, kUuidWireSize));
 
         if (!thread) {
             res.response.code = ERR_UNKNOWN_THREAD;
@@ -153,12 +131,12 @@ Result Business::handle_info(int fd)
         }
 
         std::vector<uint8_t> payload;
-        payload.reserve(kUuidWireSize + kUuidWireSize + kNameWireSize + MAX_BODY_LENGTH + sizeof(uint32_t));
+        payload.reserve(kUuidWireSize + kUuidWireSize + sizeof(uint64_t) + kNameWireSize + MAX_BODY_LENGTH);
         append_uuid36(payload, thread->uuid);
         append_uuid36(payload, thread->creator_uuid);
+        append_i64(payload, static_cast<int64_t>(thread->timestamp));
         append_name32(payload, thread->title);
         append_fixed(payload, thread->body, MAX_BODY_LENGTH);
-        append_u32(payload, static_cast<uint32_t>(thread->timestamp));
 
         res.response.code = RES_THREAD_INFO;
         res.response.bytes = make_message(res.response.code, payload);
