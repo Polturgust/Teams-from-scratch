@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include "../Client/Client.hpp"
 
 static void print_help(void)
 {
@@ -31,5 +32,7 @@ int main(int argc, char **argv)
         std::cerr << "Invalid port number." << std::endl;
         return 84;
     }
+    Client client(argv[1], port);
+    client.run();
     return 0;
 }
