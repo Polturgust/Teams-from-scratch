@@ -206,3 +206,50 @@ void Client::_handle_stdin()
     }
     _dispatch(cmd);
 }
+
+Client::ParsedCommand Client::_parse_line(const std::string &line)
+{
+    ParsedCommand result;
+ 
+    if (line.empty() || line[0] != '/') {
+        result.valid = false;
+        result.error = "Commands must start with '/'";
+        return result;
+    }
+ 
+    // Extract command name (up to first space or end)
+    size_t i = 1;
+    while (i < line.size() && line[i] != ' ') ++i;
+    result.name = line.substr(1, i - 1);
+ 
+    // Parse quoted arguments
+    while (i < line.size()) {
+        // Skip spaces
+        while (i < line.size() && line[i] == ' ') ++i;
+        if (i >= line.size()) break;
+ 
+        if (line[i] != '"') {
+            result.valid = false;
+            result.error = "Arguments must be enclosed in double quotes";
+            return result;
+        }
+        ++i; // skip opening "
+        std::string arg;
+        bool closed = false;
+        while (i < line.size()) {
+            if (line[i] == '"') {
+                closed = true;
+                ++i;
+                break;
+            }
+            arg.push_back(line[i++]);
+        }
+        if (!closed) {
+            result.valid = false;
+            result.error = "Unclosed double quote in argument";
+            return result;
+        }
+        result.args.push_back(arg);
+    }
+    return result;
+}
