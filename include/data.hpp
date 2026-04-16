@@ -70,10 +70,19 @@ struct user_t
     int fd;
 };
 
+struct client_context_t
+{
+    uint8_t level;
+    char team_uuid[UUID_STR_LEN];
+    char channel_uuid[UUID_STR_LEN];
+    char thread_uuid[UUID_STR_LEN];
+};
+
 struct server_data_t
 {
     std::vector<user_t> users;
     std::map<int, std::string> sessions;
+    std::map<int, client_context_t> client_contexts;
     std::vector<team_t> teams;
     std::vector<message_t> messages;
 };

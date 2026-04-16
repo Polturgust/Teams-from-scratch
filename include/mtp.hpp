@@ -49,6 +49,8 @@ public:
     Result handle_subscribed_teams(int fd);
     Result handle_subscribed_users(int fd, std::string_view team_uuid);
 
+    Result handle_use(int fd, std::string_view payload_bytes);
+
 private:
     server_data_t &_data;
 };
