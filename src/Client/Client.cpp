@@ -17,4 +17,48 @@ static void pack_fixed(std::vector<uint8_t> &buf, const std::string &s, size_t f
         buf.push_back(0x00);
 }
 
+static std::string read_fixed(const std::vector<uint8_t> &p, size_t &off, size_t len)
+{
+    if (off + len > p.size()) return "";
+    std::string s(reinterpret_cast<const char *>(p.data() + off), len);
+    size_t end = s.find('\0');
+    if (end != std::string::npos) s.resize(end);
+    off += len;
+    return s;
+}
 
+static uint32_t read_u32(const std::vector<uint8_t> &p, size_t &off)
+{
+    if (off + 4 > p.size()) return 0;
+    uint32_t v;
+    std::memcpy(&v, p.data() + off, 4);
+    off += 4;
+    return ntohl(v);
+}
+
+static uint8_t read_u8(const std::vector<uint8_t> &p, size_t &off)
+{
+    if (off >= p.size()) return 0;
+    return p[off++];
+}
+
+static int64_t read_i64(const std::vector<uint8_t> &p, size_t &off)
+{
+    if (off + 8 > p.size()) return 0;
+    int64_t v;
+    std::memcpy(&v, p.data() + off, 8);
+    off += 8;
+    // manual ntohll
+    uint64_t u;
+    std::memcpy(&u, &v, 8);
+    u = ((u & 0x00000000000000FFULL) << 56)
+      | ((u & 0x000000000000FF00ULL) << 40)
+      | ((u & 0x0000000000FF0000ULL) << 24)
+      | ((u & 0x00000000FF000000ULL) <<  8)
+      | ((u & 0x000000FF00000000ULL) >>  8)
+      | ((u & 0x0000FF0000000000ULL) >> 24)
+      | ((u & 0x00FF000000000000ULL) >> 40)
+      | ((u & 0xFF00000000000000ULL) >> 56);
+    std::memcpy(&v, &u, 8);
+    return v;
+}
