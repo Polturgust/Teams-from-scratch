@@ -10,8 +10,8 @@ CXXFLAGS	=	-Wall -Wextra -Werror -std=c++17 -I./include -I./libs/myteams
 
 SRC_SERVER	=	src/server/main.cpp src/server/mtp_business.cpp
 
-SRC_CLIENT	=	src/client/main.cpp
-				src/client/Client.cpp
+SRC_CLIENT	=	src/client/main.cpp \
+				src/Client/Client.cpp
 
 OBJ_SERVER	=	$(SRC_SERVER:.cpp=.o)
 OBJ_CLIENT	=	$(SRC_CLIENT:.cpp=.o)
