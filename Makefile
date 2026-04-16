@@ -30,7 +30,7 @@ SRC_CLIENT	=	src/client/main.cpp \
 				src/client/Command_help.cpp \
 				src/client/Individual.cpp \
 				src/client/Server_response.cpp \
-				src/client/helpers.cpp
+				src/client/Helpers.cpp
 
 OBJ_SERVER	=	$(SRC_SERVER:.cpp=.o)
 OBJ_CLIENT	=	$(SRC_CLIENT:.cpp=.o)
