@@ -52,6 +52,7 @@ public:
     Result handle_use(int fd, std::string_view payload_bytes);
     Result handle_create(int fd, std::string_view payload_bytes);
     Result handle_list(int fd);
+    Result handle_info(int fd);
 
 private:
     server_data_t &_data;
