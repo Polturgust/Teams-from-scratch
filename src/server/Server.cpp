@@ -76,3 +76,29 @@ void Server::_handle_new_connection()
     state.fd = client_fd;
     clients[client_fd] = state;
 }
+
+void Server::_process_recv_buffer(int fd)
+{
+    auto &buf = clients[fd].recv_buffer;
+
+    while (buf.size() >= HEADER_SIZE) {
+
+        uint16_t cmd = ntohs(*(uint16_t *)&buf[0]);
+        uint32_t payload_size = ntohl(*(uint32_t *)&buf[2]);
+
+        if (payload_size > 65535) {
+            //_handle_client_disconnect(fd); je vais ajoutez la fnction
+            return;
+        }
+        if (buf.size() < HEADER_SIZE + payload_size)
+            break;
+        std::vector<uint8_t> payload(
+            buf.begin() + HEADER_SIZE,
+            buf.begin() + HEADER_SIZE + payload_size
+        );
+        buf.erase(buf.begin(), buf.begin() + HEADER_SIZE + payload_size);
+        _dispatch(fd, cmd, payload);
+        if (clients.find(fd) == clients.end())
+            return;
+    }
+}
