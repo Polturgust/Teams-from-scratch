@@ -50,6 +50,7 @@ public:
     Result handle_subscribed_users(int fd, std::string_view team_uuid);
 
     Result handle_use(int fd, std::string_view payload_bytes);
+    Result handle_create(int fd, std::string_view payload_bytes);
 
 private:
     server_data_t &_data;
