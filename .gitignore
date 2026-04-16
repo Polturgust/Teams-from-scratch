@@ -1,6 +1,85 @@
-# Files created when make
-*.o
+.vscode/
 
-# Executables
-myteams_cli
+# Editor/IDE files
+.idea/
+.vs/
+.history/
+*.code-workspace
+
+# OS/desktop files
+.DS_Store
+Thumbs.db
+
+# Build/test artifacts
+*.o
+*.a
+*.so
+*.d
+*.out
+*.exe
 myteams_server
+myteams_cli
+mtp_business_smoke
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Makefile.user
+compile_commands.json
+.cache/
+.clangd/
+*.gcda
+*.gcno
+*.gcov
+
+# Temp/swap/backup
+*~
+*.swp
+*.swo
+*.tmp
+*.bak
+core
+core.*
+vgcore.*
+
+# Logs
+*.log
+
+# Build artifacts
+*.o
+*.a
+*.so
+*.d
+*.out
+*.exe
+
+# Project binaries
+myteams_server
+myteams_cli
+
+# Common build directories
+build/
+cmake-build-*/
+
+# Tooling caches
+compile_commands.json
+.cache/
+.clangd/
+
+# IDEs
+.idea/
+
+# OS / editor temp files
+.DS_Store
+*~
+*.swp
+*.swo
+*.tmp
+
+# Debug dumps
+vgcore.*
+core
+core.*
+
+# Logs
+*.log

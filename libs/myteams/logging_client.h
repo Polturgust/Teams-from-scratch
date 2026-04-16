@@ -8,6 +8,10 @@
 #ifndef LIB_MYTEAMS_LOGGING_CLIENT_H
 #define LIB_MYTEAMS_LOGGING_CLIENT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <time.h>
 
 /*
@@ -469,5 +473,9 @@ int client_print_subscribed(char const *user_uuid, char const *team_uuid);
 ** /unsubscribe "team_uuid"
 **/
 int client_print_unsubscribed(char const *user_uuid, char const *team_uuid);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIB_MYTEAMS_LOGGING_CLIENT_H */
