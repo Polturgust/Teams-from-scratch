@@ -5,7 +5,7 @@
 ** helpers.cpp
 */
 
-#include "Client.hpp"
+#include "Helpers.hpp"
 
 void pack_fixed(std::vector<uint8_t> &buf, const std::string &s, size_t field_len)
 {
@@ -59,28 +59,4 @@ int64_t read_i64(const std::vector<uint8_t> &p, size_t &off)
       | ((u & 0xFF00000000000000ULL) >> 56);
     std::memcpy(&v, &u, 8);
     return v;
-}
-
-void Client::_cmd_help()
-{
-    std::cout <<
-        "Available commands:\n"
-        "  /help                                        Show this help\n"
-        "  /login \"user_name\"                           Log in to the server\n"
-        "  /logout                                      Disconnect from the server\n"
-        "  /users                                       List all users\n"
-        "  /user \"user_uuid\"                            Get details about a user\n"
-        "  /send \"user_uuid\" \"message_body\"             Send a private message\n"
-        "  /messages \"user_uuid\"                        List messages with a user\n"
-        "  /subscribe \"team_uuid\"                       Subscribe to a team\n"
-        "  /subscribed [\"team_uuid\"]                    List subscribed teams or team members\n"
-        "  /unsubscribe \"team_uuid\"                     Unsubscribe from a team\n"
-        "  /use [\"team_uuid\" [\"channel_uuid\" [\"thread_uuid\"]]]  Set context\n"
-        "  /create [args...]                            Create resource (context-dependent)\n"
-        "    (no context)          \"team_name\" \"team_description\"\n"
-        "    (team)                \"channel_name\" \"channel_description\"\n"
-        "    (team+channel)        \"thread_title\" \"thread_body\"\n"
-        "    (team+channel+thread) \"comment_body\"\n"
-        "  /list                                        List resources (context-dependent)\n"
-        "  /info                                        Show info (context-dependent)\n";
 }
