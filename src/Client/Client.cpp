@@ -210,30 +210,27 @@ void Client::_handle_stdin()
 Client::ParsedCommand Client::_parse_line(const std::string &line)
 {
     ParsedCommand result;
- 
+
     if (line.empty() || line[0] != '/') {
         result.valid = false;
         result.error = "Commands must start with '/'";
         return result;
     }
- 
-    // Extract command name (up to first space or end)
+
     size_t i = 1;
     while (i < line.size() && line[i] != ' ') ++i;
     result.name = line.substr(1, i - 1);
- 
-    // Parse quoted arguments
+
     while (i < line.size()) {
-        // Skip spaces
         while (i < line.size() && line[i] == ' ') ++i;
         if (i >= line.size()) break;
- 
+
         if (line[i] != '"') {
             result.valid = false;
             result.error = "Arguments must be enclosed in double quotes";
             return result;
         }
-        ++i; // skip opening "
+        ++i;
         std::string arg;
         bool closed = false;
         while (i < line.size()) {
@@ -252,4 +249,24 @@ Client::ParsedCommand Client::_parse_line(const std::string &line)
         result.args.push_back(arg);
     }
     return result;
+}
+
+void Client::_dispatch(const ParsedCommand &cmd)
+{
+    if (cmd.name == "help")        { _cmd_help(); return; }
+    if (cmd.name == "login")       { _cmd_login(cmd); return; }
+    if (cmd.name == "logout")      { _cmd_logout(cmd); return; }
+    if (cmd.name == "users")       { _cmd_users(cmd); return; }
+    if (cmd.name == "user")        { _cmd_user(cmd); return; }
+    if (cmd.name == "send")        { _cmd_send(cmd); return; }
+    if (cmd.name == "messages")    { _cmd_messages(cmd); return; }
+    if (cmd.name == "subscribe")   { _cmd_subscribe(cmd); return; }
+    if (cmd.name == "subscribed")  { _cmd_subscribed(cmd); return; }
+    if (cmd.name == "unsubscribe") { _cmd_unsubscribe(cmd); return; }
+    if (cmd.name == "use")         { _cmd_use(cmd); return; }
+    if (cmd.name == "create")      { _cmd_create(cmd); return; }
+    if (cmd.name == "list")        { _cmd_list(cmd); return; }
+    if (cmd.name == "info")        { _cmd_info(cmd); return; }
+
+    std::cerr << "Unknown command: /" << cmd.name << ". Type /help for help." << std::endl;
 }
