@@ -25,7 +25,6 @@ Result Business::handle_users(int fd)
         return res;
     }
 
-    // RES_USERS_LIST: count(4) + [uuid(36) + name(32) + status(1)]*
     std::vector<uint8_t> payload;
 
     append_u32(payload, static_cast<uint32_t>(_data.users.size()));
@@ -68,7 +67,6 @@ Result Business::handle_user(int fd, std::string_view user_uuid)
         return res;
     }
 
-    // RES_USER_INFO: uuid(36) + name(32) + status(1)
     std::vector<uint8_t> payload;
     payload.reserve(kUuidWireSize + kNameWireSize + 1);
     append_uuid36(payload, user->uuid);

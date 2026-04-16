@@ -58,7 +58,6 @@ inline void append_u32(std::vector<uint8_t> &out, uint32_t value)
 
 inline void append_uuid36(std::vector<uint8_t> &out, const char *uuid37)
 {
-    // Internal UUID strings are null-terminated (37). Wire uses exactly 36 bytes, no '\0'.
     append_fixed(out, uuid37, kUuidWireSize);
 }
 

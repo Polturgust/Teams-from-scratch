@@ -48,7 +48,6 @@ Result Business::handle_send(int fd, std::string_view receiver_uuid, std::string
         return res;
     }
 
-    // Persist message
     message_t msg{};
     std::memset(&msg, 0, sizeof(msg));
     std::memcpy(msg.sender_uuid, sender_uuid.data(), std::min<std::size_t>(sender_uuid.size(), kUuidWireSize));
@@ -65,11 +64,9 @@ Result Business::handle_send(int fd, std::string_view receiver_uuid, std::string
 
     server_event_private_message_sended(sender_uuid.c_str(), receiver->uuid, msg.body);
 
-    // RES_SEND_OK: empty
     res.response.code = RES_SEND_OK;
     res.response.bytes = make_message(res.response.code, {});
 
-    // EVT_MESSAGE_RECEIVED: sender_uuid(36) + body(512)
     std::vector<uint8_t> evt_payload;
     evt_payload.reserve(kUuidWireSize + MAX_BODY_LENGTH);
     append_fixed(evt_payload, sender_uuid.data(), kUuidWireSize);
@@ -120,7 +117,6 @@ Result Business::handle_messages(int fd, std::string_view user_uuid)
         return res;
     }
 
-    // RES_MESSAGES_LIST: count(4) + [sender_uuid(36) + receiver_uuid(36) + timestamp(8) + body(512)]*
     std::vector<const message_t *> msgs;
     for (const auto &m : _data.messages) {
         const std::string_view sender(m.sender_uuid, kUuidWireSize);

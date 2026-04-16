@@ -59,7 +59,6 @@ Result Business::handle_login(int fd, std::string_view name)
     if (!was_online) {
         server_event_user_logged_in(user->uuid);
 
-        // EVT_USER_LOGGED_IN: uuid(36) + name(32)
         Push evt;
         evt.packet.code = EVT_USER_LOGGED_IN;
         evt.packet.bytes = make_message(evt.packet.code, payload);
@@ -93,7 +92,6 @@ Result Business::handle_logout(int fd)
         }
     }
 
-    // RES_LOGOUT_OK: uuid(36) + name(32)
     std::vector<uint8_t> payload;
     payload.reserve(kUuidWireSize + kNameWireSize);
     append_fixed(payload, uuid.data(), kUuidWireSize);
@@ -130,7 +128,7 @@ Result Business::handle_logout(int fd)
         evt.fds.reserve(_data.sessions.size() + 1);
         for (const auto &kv : _data.sessions)
             evt.fds.push_back(kv.first);
-        evt.fds.push_back(fd); // the session that logged out should receive the event too
+        evt.fds.push_back(fd);
         res.pushes.push_back(std::move(evt));
     }
 
