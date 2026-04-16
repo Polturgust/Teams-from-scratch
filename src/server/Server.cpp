@@ -44,3 +44,21 @@ Server::~Server()
     close(_server_fd);
 }
 
+std::vector<struct pollfd> Server::_build_pollfds()
+{
+    std::vector<struct pollfd> fds;
+    struct pollfd server_pfd = {};
+    server_pfd.fd = _server_fd;
+    server_pfd.events = POLLIN;
+    fds.push_back(server_pfd);
+
+    for (auto &[fd, client] : clients) {
+        struct pollfd pfd = {};
+        pfd.fd = fd;
+        pfd.events = POLLIN;
+        if (!client.send_buffer.empty())
+            pfd.events |= POLLOUT;
+        fds.push_back(pfd);
+    }
+    return fds;
+}
