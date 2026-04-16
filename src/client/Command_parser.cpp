@@ -50,4 +50,3 @@ Client::ParsedCommand Client::_parse_line(const std::string &line)
     }
     return result;
 }
-
