@@ -116,3 +116,19 @@ void Server::_handle_client_read(int fd)
     buf.insert(buf.end(), tmp, tmp + n);
     _process_recv_buffer(fd);
 }
+
+void Server::_handle_client_disconnect(int fd)
+{
+    auto it = clients.find(fd);
+    if (it != clients.end() && !it->second.user_uuid.empty()) {
+        for (auto &user : data.users) {
+            if (it->second.user_uuid == user.uuid) {
+                user.is_logged = false;
+                user.fd = -1;
+                break;
+            }
+        }
+    }
+    close(fd);
+    clients.erase(fd);
+}
