@@ -46,8 +46,8 @@ Result Business::handle_login(int fd, std::string_view name)
     user->is_logged = true;
     user->fd = fd;
     _data.sessions[fd] = std::string(user->uuid);
+    _data.client_contexts[fd] = client_context_t{};
 
-    // RES_LOGIN_OK: uuid(36) + name(32)
     std::vector<uint8_t> payload;
     payload.reserve(kUuidWireSize + kNameWireSize);
     append_uuid36(payload, user->uuid);
@@ -118,6 +118,8 @@ Result Business::handle_logout(int fd)
 
     if (user)
         user->is_logged = still_online;
+
+    _data.client_contexts.erase(fd);
 
     if (!still_online) {
         server_event_user_logged_out(uuid.c_str());
