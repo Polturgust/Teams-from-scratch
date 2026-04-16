@@ -56,6 +56,22 @@ inline void append_u32(std::vector<uint8_t> &out, uint32_t value)
     append_fixed(out, &be, sizeof(be));
 }
 
+inline uint64_t htonll(uint64_t value)
+{
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    return (static_cast<uint64_t>(htonl(static_cast<uint32_t>(value & 0xFFFFFFFFULL))) << 32) |
+        htonl(static_cast<uint32_t>(value >> 32));
+#else
+    return value;
+#endif
+}
+
+inline void append_i64(std::vector<uint8_t> &out, int64_t value)
+{
+    const uint64_t be = htonll(static_cast<uint64_t>(value));
+    append_fixed(out, &be, sizeof(be));
+}
+
 inline void append_uuid36(std::vector<uint8_t> &out, const char *uuid37)
 {
     append_fixed(out, uuid37, kUuidWireSize);
@@ -143,6 +159,47 @@ inline team_t *find_team_by_uuid(server_data_t &data, std::string_view uuid36)
 inline bool is_subscribed_to(const team_t &team, const std::string &user_uuid)
 {
     return std::find(team.member_uuids.begin(), team.member_uuids.end(), user_uuid) != team.member_uuids.end();
+}
+
+inline channel_t *find_channel_by_uuid(team_t &team, std::string_view uuid36)
+{
+    if (!is_uuid36(uuid36))
+        return nullptr;
+    for (auto &channel : team.channels) {
+        if (std::string_view(channel.uuid, kUuidWireSize) == uuid36)
+            return &channel;
+    }
+    return nullptr;
+}
+
+inline thread_t *find_thread_by_uuid(channel_t &channel, std::string_view uuid36)
+{
+    if (!is_uuid36(uuid36))
+        return nullptr;
+    for (auto &thread : channel.threads) {
+        if (std::string_view(thread.uuid, kUuidWireSize) == uuid36)
+            return &thread;
+    }
+    return nullptr;
+}
+
+inline std::vector<int> logged_fds(const server_data_t &data)
+{
+    std::vector<int> fds;
+    fds.reserve(data.sessions.size());
+    for (const auto &kv : data.sessions)
+        fds.push_back(kv.first);
+    return fds;
+}
+
+inline std::vector<int> team_member_fds(const server_data_t &data, const team_t &team)
+{
+    std::vector<int> fds;
+    for (const auto &kv : data.sessions) {
+        if (is_subscribed_to(team, kv.second))
+            fds.push_back(kv.first);
+    }
+    return fds;
 }
 
 } // namespace mtp::detail
