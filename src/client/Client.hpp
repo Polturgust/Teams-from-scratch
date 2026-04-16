@@ -37,6 +37,12 @@ class Client {
         std::vector<uint8_t> _recv_buf;
         std::vector<uint8_t> _send_buf;
 
+        void pack_fixed(std::vector<uint8_t> &buf, const std::string &s, size_t field_len);
+        std::string read_fixed(const std::vector<uint8_t> &p, size_t &off, size_t len);
+        uint32_t read_u32(const std::vector<uint8_t> &p, size_t &off);
+        uint8_t read_u8(const std::vector<uint8_t> &p, size_t &off);
+        int64_t read_i64(const std::vector<uint8_t> &p, size_t &off);
+
         void _connect(const std::string &ip, int port);
         void _handle_server_read();
         void _handle_server_write();
