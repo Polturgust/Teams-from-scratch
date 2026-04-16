@@ -37,13 +37,10 @@ Result Business::handle_use(int fd, std::string_view payload_bytes)
     const uint8_t level = static_cast<uint8_t>(payload_bytes[0]);
     const std::string user_uuid = it->second;
 
-    // Initialize or reset context
     client_context_t ctx{};
-    std::memset(&ctx, 0, sizeof(ctx));
     ctx.level = level;
 
     if (level == USE_NONE) {
-        // Reset context: respond with RES_USER_DETAILS
         _data.client_contexts[fd] = ctx;
 
         user_t *user = find_user_by_uuid(_data, user_uuid);
@@ -83,10 +80,15 @@ Result Business::handle_use(int fd, std::string_view payload_bytes)
             return res;
         }
 
+        if (!is_subscribed_to(*team, user_uuid)) {
+            res.response.code = ERR_NOT_SUBSCRIBED;
+            res.response.bytes = make_message(res.response.code, {});
+            return res;
+        }
+
         std::memcpy(ctx.team_uuid, team_uuid.data(), kUuidWireSize);
         _data.client_contexts[fd] = ctx;
 
-        // RES_TEAM_INFO: uuid(36) + name(32) + desc(255)
         std::vector<uint8_t> payload;
         payload.reserve(kUuidWireSize + kNameWireSize + kDescWireSize);
         append_uuid36(payload, team->uuid);
@@ -118,13 +120,13 @@ Result Business::handle_use(int fd, std::string_view payload_bytes)
             return res;
         }
 
-        channel_t *channel = nullptr;
-        for (auto &c : team->channels) {
-            if (std::string_view(c.uuid, kUuidWireSize) == channel_uuid) {
-                channel = &c;
-                break;
-            }
+        if (!is_subscribed_to(*team, user_uuid)) {
+            res.response.code = ERR_NOT_SUBSCRIBED;
+            res.response.bytes = make_message(res.response.code, {});
+            return res;
         }
+
+        channel_t *channel = find_channel_by_uuid(*team, channel_uuid);
 
         if (!channel) {
             std::vector<uint8_t> payload;
@@ -139,7 +141,6 @@ Result Business::handle_use(int fd, std::string_view payload_bytes)
         std::memcpy(ctx.channel_uuid, channel_uuid.data(), kUuidWireSize);
         _data.client_contexts[fd] = ctx;
 
-        // RES_CHANNEL_INFO: uuid(36) + name(32) + desc(255)
         std::vector<uint8_t> payload;
         payload.reserve(kUuidWireSize + kNameWireSize + kDescWireSize);
         append_uuid36(payload, channel->uuid);
@@ -172,13 +173,13 @@ Result Business::handle_use(int fd, std::string_view payload_bytes)
             return res;
         }
 
-        channel_t *channel = nullptr;
-        for (auto &c : team->channels) {
-            if (std::string_view(c.uuid, kUuidWireSize) == channel_uuid) {
-                channel = &c;
-                break;
-            }
+        if (!is_subscribed_to(*team, user_uuid)) {
+            res.response.code = ERR_NOT_SUBSCRIBED;
+            res.response.bytes = make_message(res.response.code, {});
+            return res;
         }
+
+        channel_t *channel = find_channel_by_uuid(*team, channel_uuid);
 
         if (!channel) {
             std::vector<uint8_t> payload;
@@ -189,13 +190,7 @@ Result Business::handle_use(int fd, std::string_view payload_bytes)
             return res;
         }
 
-        thread_t *thread = nullptr;
-        for (auto &t : channel->threads) {
-            if (std::string_view(t.uuid, kUuidWireSize) == thread_uuid) {
-                thread = &t;
-                break;
-            }
-        }
+        thread_t *thread = find_thread_by_uuid(*channel, thread_uuid);
 
         if (!thread) {
             std::vector<uint8_t> payload;
@@ -211,24 +206,11 @@ Result Business::handle_use(int fd, std::string_view payload_bytes)
         std::memcpy(ctx.thread_uuid, thread_uuid.data(), kUuidWireSize);
         _data.client_contexts[fd] = ctx;
 
-        // RES_THREAD_INFO: uuid(36) + creator_uuid(36) + timestamp(8) + title(32) + body(512)
         std::vector<uint8_t> payload;
         payload.reserve(kUuidWireSize + kUuidWireSize + 8 + kNameWireSize + MAX_BODY_LENGTH);
         append_uuid36(payload, thread->uuid);
         append_uuid36(payload, thread->creator_uuid);
-
-        auto htonll = [](uint64_t v) -> uint64_t {
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-            return (static_cast<uint64_t>(htonl(static_cast<uint32_t>(v & 0xFFFFFFFFULL))) << 32) |
-                htonl(static_cast<uint32_t>(v >> 32));
-#else
-            return v;
-#endif
-        };
-
-        const int64_t ts = static_cast<int64_t>(thread->timestamp);
-        const uint64_t ts_be = htonll(static_cast<uint64_t>(ts));
-        append_fixed(payload, &ts_be, sizeof(ts_be));
+        append_i64(payload, static_cast<int64_t>(thread->timestamp));
 
         append_fixed(payload, thread->title, kNameWireSize);
         append_fixed(payload, thread->body, MAX_BODY_LENGTH);
