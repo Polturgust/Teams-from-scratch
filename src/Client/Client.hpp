@@ -10,8 +10,19 @@
 
     #include <string>
     #include <vector>
+    #include <cerrno>
+    #include <cstring>
+    #include <cstdlib>
     #include <cstdint>
+    #include <iostream>
     #include <functional>
+
+    #include <poll.h>
+    #include <unistd.h>
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
+
     #include "../../include/protocole.hpp"
 
 class Client {
