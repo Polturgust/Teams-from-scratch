@@ -147,3 +147,38 @@ void Server::_handle_client_disconnect(int fd)
     clients.erase(fd);
 }
 
+void Server::run()
+{
+    _running = true;
+
+    while (_running) {
+        std::vector<struct pollfd> pollfds = _build_pollfds();
+
+        int ret = poll(pollfds.data(), pollfds.size(), -1);
+        if (ret < 0) {
+            if (errno == EINTR)
+                break;
+            throw std::runtime_error("poll() failed");
+        }
+        if (pollfds[0].revents & POLLIN)
+            _handle_new_connection();
+        std::vector<int> client_fds;
+        for (auto &[fd, _] : clients)
+            client_fds.push_back(fd);
+        for (size_t i = 1; i < pollfds.size(); i++) {
+            int fd = pollfds[i].fd;
+        if (clients.find(fd) == clients.end())
+                continue;
+            if (pollfds[i].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+                _handle_client_disconnect(fd);
+                continue;
+            }
+            if (pollfds[i].revents & POLLIN)
+                _handle_client_read(fd);
+            if (clients.find(fd) == clients.end())
+                continue;
+            if (pollfds[i].revents & POLLOUT)
+                _handle_client_write(fd);
+        }
+    }
+}

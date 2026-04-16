@@ -28,6 +28,7 @@ class Server {
     public:
         Server(int port);
         ~Server();
+        void run();
         void shutdown();
         void queue_response(int fd, uint16_t cmd, const void *data = nullptr, uint32_t size = 0);
         void broadcast_logged(uint16_t cmd, const void *data, uint32_t size, int exclude_fd = -1);
