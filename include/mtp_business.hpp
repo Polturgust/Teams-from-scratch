@@ -44,6 +44,11 @@ public:
     Result handle_send(int fd, std::string_view receiver_uuid, std::string_view body);
     Result handle_messages(int fd, std::string_view user_uuid);
 
+    Result handle_subscribe(int fd, std::string_view team_uuid);
+    Result handle_unsubscribe(int fd, std::string_view team_uuid);
+    Result handle_subscribed_teams(int fd);
+    Result handle_subscribed_users(int fd, std::string_view team_uuid);
+
 private:
     server_data_t &_data;
 };
