@@ -37,3 +37,10 @@ Server::Server(int port) : _port(port), _running(false)
     }
 }
 
+Server::~Server()
+{
+    for (auto &[fd, client] : clients)
+        close(fd);
+    close(_server_fd);
+}
+
