@@ -182,3 +182,20 @@ void Server::run()
         }
     }
 }
+
+void Server::queue_response(int fd, uint16_t cmd, const void *payload_data, uint32_t payload_size)
+{
+    if (clients.find(fd) == clients.end())
+        return;
+
+    auto &buf = clients[fd].send_buffer;
+    uint16_t net_cmd = htons(cmd);
+    uint32_t net_size = htonl(payload_size);
+    buf.insert(buf.end(), (uint8_t *)&net_cmd, (uint8_t *)&net_cmd + sizeof(net_cmd));
+    buf.insert(buf.end(), (uint8_t *)&net_size, (uint8_t *)&net_size + sizeof(net_size));
+
+    if (payload_data && payload_size > 0) {
+        const uint8_t *p = (const uint8_t *)payload_data;
+        buf.insert(buf.end(), p, p + payload_size);
+    }
+}
