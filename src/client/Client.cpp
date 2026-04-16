@@ -6,7 +6,6 @@
 */
 
 #include "Client.hpp"
-#include "../../libs/myteams/logging_client.h"
 
 void Client::run()
 {
