@@ -6,7 +6,7 @@ Ce document décrit le protocole de communication entre le client `myteams_cli` 
 
 ## 2. Architecture des messages
 
-Chaque message (client → serveur ou serveur → client) suit le même format :
+Chaque message (client → serveur ou serveur → client) suit le même format:
 
 ```
 +------------------+------------------+--------------------+
