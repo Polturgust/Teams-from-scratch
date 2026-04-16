@@ -21,9 +21,14 @@ struct Packet {
     std::vector<uint8_t> bytes;
 };
 
+struct Push {
+    Packet packet;
+    std::vector<int> fds;
+};
+
 struct Result {
     Packet response;
-    std::vector<Packet> pushes;
+    std::vector<Push> pushes;
 };
 
 class Business {
@@ -31,7 +36,13 @@ public:
     explicit Business(server_data_t &data);
 
     Result handle_login(int fd, std::string_view name);
+    Result handle_logout(int fd);
+
     Result handle_users(int fd);
+    Result handle_user(int fd, std::string_view user_uuid);
+
+    Result handle_send(int fd, std::string_view receiver_uuid, std::string_view body);
+    Result handle_messages(int fd, std::string_view user_uuid);
 
 private:
     server_data_t &_data;
