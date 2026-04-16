@@ -183,6 +183,12 @@ void Server::run()
     }
 }
 
+
+void Server::shutdown()
+{
+    _running = false;
+}
+
 void Server::queue_response(int fd, uint16_t cmd, const void *payload_data, uint32_t payload_size)
 {
     if (clients.find(fd) == clients.end())
@@ -226,6 +232,7 @@ void Server::broadcast_team(const std::string &team_uuid, uint16_t cmd, const vo
 
 void Server::_dispatch(int fd, uint16_t cmd, const std::vector<uint8_t> &payload)
 {
+    (void)payload;
     auto &client = clients[fd];
     if (client.user_uuid.empty() && cmd != CMD_LOGIN) {
         queue_response(fd, ERR_UNAUTHORIZED);

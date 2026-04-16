@@ -9,6 +9,7 @@ CXX			=	g++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++17 -I./include -I./libs/myteams
 
 SRC_SERVER	= 	src/server/main.cpp \
+		src/server/Server.cpp \
 		src/server/handlers/mtp_auth.cpp \
 		src/server/handlers/mtp_users.cpp \
 		src/server/handlers/mtp_messages.cpp \
