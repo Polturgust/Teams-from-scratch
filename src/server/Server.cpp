@@ -199,3 +199,68 @@ void Server::queue_response(int fd, uint16_t cmd, const void *payload_data, uint
         buf.insert(buf.end(), p, p + payload_size);
     }
 }
+
+void Server::broadcast_logged(uint16_t cmd, const void *payload_data, uint32_t size, int exclude_fd)
+{
+    for (auto &[fd, client] : clients) {
+        if (fd != exclude_fd && !client.user_uuid.empty())
+            queue_response(fd, cmd, payload_data, size);
+    }
+}
+
+void Server::broadcast_team(const std::string &team_uuid, uint16_t cmd, const void *payload_data, uint32_t size, int exclude_fd)
+{
+    for (auto &team : data.teams) {
+        if (team_uuid == team.uuid) {
+            for (auto &member_uuid : team.member_uuids) {
+                for (auto &[fd, client] : clients) {
+                    if (fd != exclude_fd &&
+                        client.user_uuid == member_uuid)
+                        queue_response(fd, cmd, payload_data, size);
+                }
+            }
+            break;
+        }
+    }
+}
+
+void Server::_dispatch(int fd, uint16_t cmd, const std::vector<uint8_t> &payload)
+{
+    auto &client = clients[fd];
+    if (client.user_uuid.empty() && cmd != CMD_LOGIN) {
+        queue_response(fd, ERR_UNAUTHORIZED);
+        return;
+    }
+ // on doit mettre les fonctions de flo dans les case !!
+    switch (cmd) {
+        case CMD_LOGIN:
+            break;
+        case CMD_LOGOUT:
+            break;
+        case CMD_USERS:
+            break;
+        case CMD_USER:
+            break;
+        case CMD_SEND:
+            break;
+        case CMD_MESSAGES:
+            break;
+        case CMD_SUBSCRIBE:
+            break;
+        case CMD_SUBSCRIBED:
+            break;
+        case CMD_UNSUBSCRIBE:
+            break;
+        case CMD_USE:
+            break;
+        case CMD_CREATE:
+            break;
+        case CMD_LIST:
+            break;
+        case CMD_INFO:
+            break;
+        default:
+            queue_response(fd, ERR_INVALID_COMMAND);
+            break;
+    }
+}
