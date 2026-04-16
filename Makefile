@@ -8,7 +8,15 @@
 CXX			=	g++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++17 -I./include -I./libs/myteams
 
-SRC_SERVER	=	src/server/main.cpp src/server/mtp_business.cpp
+SRC_SERVER	= 	src/server/main.cpp \
+		src/server/business/mtp_business_auth.cpp \
+		src/server/business/mtp_business_users.cpp \
+		src/server/business/mtp_business_messages.cpp \
+		src/server/business/mtp_business_subscriptions.cpp \
+		src/server/business/mtp_business_context.cpp \
+		src/server/business/mtp_business_create.cpp \
+		src/server/business/mtp_business_list.cpp \
+		src/server/business/mtp_business_info.cpp
 
 SRC_CLIENT	=	src/client/main.cpp
 
