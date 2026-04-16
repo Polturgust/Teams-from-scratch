@@ -87,7 +87,7 @@ void Server::_process_recv_buffer(int fd)
         uint32_t payload_size = ntohl(*(uint32_t *)&buf[2]);
 
         if (payload_size > 65535) {
-            //_handle_client_disconnect(fd); je vais ajoutez la fnction
+            _handle_client_disconnect(fd);
             return;
         }
         if (buf.size() < HEADER_SIZE + payload_size)
@@ -117,6 +117,20 @@ void Server::_handle_client_read(int fd)
     _process_recv_buffer(fd);
 }
 
+void Server::_handle_client_write(int fd)
+{
+    auto &buf = clients[fd].send_buffer;
+
+    if (buf.empty())
+        return;
+    ssize_t n = write(fd, buf.data(), buf.size());
+    if (n < 0) {
+        _handle_client_disconnect(fd);
+        return;
+    }
+    buf.erase(buf.begin(), buf.begin() + n);
+}
+
 void Server::_handle_client_disconnect(int fd)
 {
     auto it = clients.find(fd);
@@ -132,3 +146,4 @@ void Server::_handle_client_disconnect(int fd)
     close(fd);
     clients.erase(fd);
 }
+
