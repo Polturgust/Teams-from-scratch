@@ -102,3 +102,17 @@ void Server::_process_recv_buffer(int fd)
             return;
     }
 }
+
+void Server::_handle_client_read(int fd)
+{
+    char tmp[4096];
+    ssize_t n = read(fd, tmp, sizeof(tmp));
+
+    if (n <= 0) {
+        _handle_client_disconnect(fd);
+        return;
+    }
+    auto &buf = clients[fd].recv_buffer;
+    buf.insert(buf.end(), tmp, tmp + n);
+    _process_recv_buffer(fd);
+}
