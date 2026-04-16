@@ -189,3 +189,20 @@ void Client::_send_packet(uint16_t cmd, const void *payload, uint32_t size)
 
     _handle_server_write();
 }
+
+void Client::_handle_stdin()
+{
+    std::string line;
+    if (!std::getline(std::cin, line)) {
+        _running = false;
+        return;
+    }
+    if (line.empty()) return;
+
+    ParsedCommand cmd = _parse_line(line);
+    if (!cmd.valid) {
+        std::cerr << "Parse error: " << cmd.error << std::endl;
+        return;
+    }
+    _dispatch(cmd);
+}
