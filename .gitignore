@@ -1,0 +1,6 @@
+# Files created when make
+*.o
+
+# Executables
+myteams_cli
+myteams_server
