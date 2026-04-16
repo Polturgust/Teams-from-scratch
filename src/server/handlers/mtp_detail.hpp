@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2025
 ** G-NWP-400-NCE-4-1-myteams-8
 ** File description:
-** mtp_business_detail.hpp
+** mtp_detail.hpp
 */
 
 #pragma once
@@ -20,7 +20,7 @@
 
 #include "data.hpp"
 
-namespace mtp::biz_detail {
+namespace mtp::detail {
 
 inline constexpr std::size_t kHeaderSize = 6;
 inline constexpr std::size_t kUuidWireSize = 36;
@@ -146,4 +146,4 @@ inline bool is_subscribed_to(const team_t &team, const std::string &user_uuid)
     return std::find(team.member_uuids.begin(), team.member_uuids.end(), user_uuid) != team.member_uuids.end();
 }
 
-} // namespace mtp::biz_detail
+} // namespace mtp::detail

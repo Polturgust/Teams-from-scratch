@@ -2,18 +2,18 @@
 ** EPITECH PROJECT, 2025
 ** G-NWP-400-NCE-4-1-myteams-8
 ** File description:
-** mtp_business_users.cpp
+** mtp_users.cpp
 */
 
-#include "mtp_business.hpp"
+#include "mtp.hpp"
 
-#include "mtp_business_detail.hpp"
+#include "mtp_detail.hpp"
 
 #include "protocole.hpp"
 
 namespace mtp {
 
-using namespace biz_detail;
+using namespace detail;
 
 Result Business::handle_users(int fd)
 {

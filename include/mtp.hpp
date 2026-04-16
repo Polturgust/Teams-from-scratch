@@ -2,11 +2,11 @@
 ** EPITECH PROJECT, 2025
 ** G-NWP-400-NCE-4-1-myteams-8
 ** File description:
-** mtp_business.hpp
+** mtp.hpp
 */
 
-#ifndef MTP_BUSINESS_HPP
-#define MTP_BUSINESS_HPP
+#ifndef MTP_HPP
+#define MTP_HPP
 
 #include <cstdint>
 #include <string_view>

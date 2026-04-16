@@ -2,19 +2,19 @@
 ** EPITECH PROJECT, 2025
 ** G-NWP-400-NCE-4-1-myteams-8
 ** File description:
-** mtp_business_auth.cpp
+** mtp_auth.cpp
 */
 
-#include "mtp_business.hpp"
+#include "mtp.hpp"
 
-#include "mtp_business_detail.hpp"
+#include "mtp_detail.hpp"
 
 #include "logging_server.h"
 #include "protocole.hpp"
 
 namespace mtp {
 
-using namespace biz_detail;
+using namespace detail;
 
 Business::Business(server_data_t &data)
     : _data(data)
