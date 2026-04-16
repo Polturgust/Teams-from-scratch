@@ -73,8 +73,6 @@ struct user_t
 struct server_data_t
 {
     std::vector<user_t> users;
-    // Logged-in sessions indexed by client fd.
-    // Allows multiple simultaneous connections for the same user.
     std::map<int, std::string> sessions;
     std::vector<team_t> teams;
     std::vector<message_t> messages;

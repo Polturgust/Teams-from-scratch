@@ -2,11 +2,11 @@
 ** EPITECH PROJECT, 2025
 ** G-NWP-400-NCE-4-1-myteams-8
 ** File description:
-** mtp_business.hpp
+** mtp.hpp
 */
 
-#ifndef MTP_BUSINESS_HPP
-#define MTP_BUSINESS_HPP
+#ifndef MTP_HPP
+#define MTP_HPP
 
 #include <cstdint>
 #include <string_view>
@@ -43,6 +43,11 @@ public:
 
     Result handle_send(int fd, std::string_view receiver_uuid, std::string_view body);
     Result handle_messages(int fd, std::string_view user_uuid);
+
+    Result handle_subscribe(int fd, std::string_view team_uuid);
+    Result handle_unsubscribe(int fd, std::string_view team_uuid);
+    Result handle_subscribed_teams(int fd);
+    Result handle_subscribed_users(int fd, std::string_view team_uuid);
 
 private:
     server_data_t &_data;
