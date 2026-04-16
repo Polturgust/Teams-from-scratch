@@ -8,7 +8,7 @@
 CXX			=	g++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++17 -I./include -I./libs/myteams
 
-SRC_SERVER	=	src/server/main.cpp
+SRC_SERVER	=	src/server/main.cpp src/server/mtp_business.cpp
 
 SRC_CLIENT	=	src/client/main.cpp
 
@@ -17,8 +17,7 @@ OBJ_CLIENT	=	$(SRC_CLIENT:.cpp=.o)
 
 SERVER		=	myteams_server
 CLIENT		=	myteams_cli
-
-LDFLAGS		=	-L./libs/myteams
+LDFLAGS		=	-L./libs/myteams -Wl,-rpath,'$$ORIGIN/libs/myteams'
 LDLIBS_SRV	=	-lmyteams -luuid
 LDLIBS_CLI	=	-lmyteams -luuid
 
