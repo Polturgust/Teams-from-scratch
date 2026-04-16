@@ -62,3 +62,17 @@ std::vector<struct pollfd> Server::_build_pollfds()
     }
     return fds;
 }
+
+void Server::_handle_new_connection()
+{
+    struct sockaddr_in client_addr = {};
+    socklen_t addr_len = sizeof(client_addr);
+
+    int client_fd = accept(_server_fd, (struct sockaddr *)&client_addr, &addr_len);
+    if (client_fd < 0)
+        return;
+
+    ClientState state = {};
+    state.fd = client_fd;
+    clients[client_fd] = state;
+}
