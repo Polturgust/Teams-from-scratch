@@ -20,7 +20,7 @@ SRC_SERVER	= 	src/server/main.cpp \
 		src/server/handlers/mtp_info.cpp
 
 SRC_CLIENT	=	src/client/main.cpp \
-				src/Client/Client.cpp
+				src/client/Client.cpp
 
 OBJ_SERVER	=	$(SRC_SERVER:.cpp=.o)
 OBJ_CLIENT	=	$(SRC_CLIENT:.cpp=.o)
