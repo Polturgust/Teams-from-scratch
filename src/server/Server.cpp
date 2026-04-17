@@ -286,10 +286,17 @@ void Server::_dispatch(int fd, uint16_t cmd, const std::vector<uint8_t> &payload
             r = _business.handle_unsubscribe(fd, extract_sv(payload, 0, 36));
             break;
         case CMD_USE:
+            r = _business.handle_use(fd, extract_sv(payload, 0, payload.size()));
+            break;
         case CMD_CREATE:
+            r = _business.handle_create(fd, extract_sv(payload, 0, payload.size()));
+            break;
         case CMD_LIST:
+            r = _business.handle_list(fd);
+            break;
         case CMD_INFO:
-            // flo doit encore les ajoutez !!
+            r = _business.handle_info(fd);
+            break;
             return;
         default: {
             uint16_t c = htons(ERR_INVALID_COMMAND);
