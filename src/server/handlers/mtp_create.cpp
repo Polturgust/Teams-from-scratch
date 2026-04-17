@@ -12,6 +12,7 @@
 
 #include "mtp_detail.hpp"
 
+#include "logging_server.h"
 #include "protocole.hpp"
 
 namespace mtp {
@@ -31,7 +32,7 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
 
     const std::string user_uuid = it->second;
     const auto ctx_it = _data.client_contexts.find(fd);
-    
+
     if (ctx_it == _data.client_contexts.end()) {
         res.response.code = ERR_INVALID_COMMAND;
         res.response.bytes = make_message(res.response.code, {});
@@ -41,7 +42,6 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
     const client_context_t &ctx = ctx_it->second;
     const uint8_t level = ctx.level;
 
-    // CREATE_TEAM: payload = name(32) + description(255)
     if (level == USE_NONE) {
         if (payload_bytes.size() < kNameWireSize + kDescWireSize) {
             res.response.code = ERR_INVALID_COMMAND;
@@ -53,13 +53,13 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
         new_uuid(team.uuid);
         std::memcpy(team.name, payload_bytes.data(), kNameWireSize);
         std::memcpy(team.description, payload_bytes.data() + kNameWireSize, kDescWireSize);
-        
-        // Auto-subscribe creator to the team
+
         team.member_uuids.push_back(user_uuid);
-        
+
         _data.teams.push_back(team);
 
-        // Response: uuid(36) + name(32) + description(255) 
+        server_event_team_created(team.uuid, team.name, user_uuid.c_str());
+
         std::vector<uint8_t> payload;
         payload.reserve(kUuidWireSize + kNameWireSize + kDescWireSize);
         append_uuid36(payload, team.uuid);
@@ -68,10 +68,15 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
 
         res.response.code = RES_TEAM_CREATED;
         res.response.bytes = make_message(res.response.code, payload);
+
+        Push evt;
+        evt.packet.code = EVT_TEAM_CREATED;
+        evt.packet.bytes = make_message(evt.packet.code, payload);
+        evt.fds = logged_fds(_data);
+        res.pushes.push_back(std::move(evt));
         return res;
     }
 
-    // CREATE_CHANNEL: payload = name(32) + description(255)
     if (level == USE_TEAM) {
         if (payload_bytes.size() < kNameWireSize + kDescWireSize) {
             res.response.code = ERR_INVALID_COMMAND;
@@ -86,14 +91,21 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
             return res;
         }
 
+        if (!is_subscribed_to(*team, user_uuid)) {
+            res.response.code = ERR_NOT_SUBSCRIBED;
+            res.response.bytes = make_message(res.response.code, {});
+            return res;
+        }
+
         channel_t channel{};
         new_uuid(channel.uuid);
         std::memcpy(channel.name, payload_bytes.data(), kNameWireSize);
         std::memcpy(channel.description, payload_bytes.data() + kNameWireSize, kDescWireSize);
-        
+
         team->channels.push_back(channel);
 
-        // Response: uuid(36) + name(32) + description(255)
+        server_event_channel_created(team->uuid, channel.uuid, channel.name);
+
         std::vector<uint8_t> payload;
         payload.reserve(kUuidWireSize + kNameWireSize + kDescWireSize);
         append_uuid36(payload, channel.uuid);
@@ -102,10 +114,15 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
 
         res.response.code = RES_CHANNEL_CREATED;
         res.response.bytes = make_message(res.response.code, payload);
+
+        Push evt;
+        evt.packet.code = EVT_CHANNEL_CREATED;
+        evt.packet.bytes = make_message(evt.packet.code, payload);
+        evt.fds = team_member_fds(_data, *team);
+        res.pushes.push_back(std::move(evt));
         return res;
     }
 
-    // CREATE_THREAD: payload = title(32) + body(512)
     if (level == USE_CHANNEL) {
         if (payload_bytes.size() < kNameWireSize + MAX_BODY_LENGTH) {
             res.response.code = ERR_INVALID_COMMAND;
@@ -120,13 +137,13 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
             return res;
         }
 
-        channel_t *channel = nullptr;
-        for (auto &c : team->channels) {
-            if (std::string_view(c.uuid, kUuidWireSize) == std::string_view(ctx.channel_uuid, kUuidWireSize)) {
-                channel = &c;
-                break;
-            }
+        if (!is_subscribed_to(*team, user_uuid)) {
+            res.response.code = ERR_NOT_SUBSCRIBED;
+            res.response.bytes = make_message(res.response.code, {});
+            return res;
         }
+
+        channel_t *channel = find_channel_by_uuid(*team, std::string_view(ctx.channel_uuid, kUuidWireSize));
 
         if (!channel) {
             res.response.code = ERR_UNKNOWN_CHANNEL;
@@ -143,21 +160,27 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
 
         channel->threads.push_back(thread);
 
-        // Response: uuid(36) + creator_uuid(36) + title(32) + body(512) + timestamp(4)
+        server_event_thread_created(channel->uuid, thread.uuid, user_uuid.c_str(), thread.title, thread.body);
+
         std::vector<uint8_t> payload;
-        payload.reserve(kUuidWireSize + kUuidWireSize + kNameWireSize + MAX_BODY_LENGTH + sizeof(uint32_t));
+        payload.reserve(kUuidWireSize + kUuidWireSize + sizeof(uint64_t) + kNameWireSize + MAX_BODY_LENGTH);
         append_uuid36(payload, thread.uuid);
         append_uuid36(payload, thread.creator_uuid);
+        append_i64(payload, static_cast<int64_t>(thread.timestamp));
         append_name32(payload, thread.title);
         append_fixed(payload, thread.body, MAX_BODY_LENGTH);
-        append_u32(payload, static_cast<uint32_t>(thread.timestamp));
 
         res.response.code = RES_THREAD_CREATED;
         res.response.bytes = make_message(res.response.code, payload);
+
+        Push evt;
+        evt.packet.code = EVT_THREAD_CREATED;
+        evt.packet.bytes = make_message(evt.packet.code, payload);
+        evt.fds = team_member_fds(_data, *team);
+        res.pushes.push_back(std::move(evt));
         return res;
     }
 
-    // CREATE_REPLY: payload = body(512)
     if (level == USE_THREAD) {
         if (payload_bytes.size() < MAX_BODY_LENGTH) {
             res.response.code = ERR_INVALID_COMMAND;
@@ -172,13 +195,13 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
             return res;
         }
 
-        channel_t *channel = nullptr;
-        for (auto &c : team->channels) {
-            if (std::string_view(c.uuid, kUuidWireSize) == std::string_view(ctx.channel_uuid, kUuidWireSize)) {
-                channel = &c;
-                break;
-            }
+        if (!is_subscribed_to(*team, user_uuid)) {
+            res.response.code = ERR_NOT_SUBSCRIBED;
+            res.response.bytes = make_message(res.response.code, {});
+            return res;
         }
+
+        channel_t *channel = find_channel_by_uuid(*team, std::string_view(ctx.channel_uuid, kUuidWireSize));
 
         if (!channel) {
             res.response.code = ERR_UNKNOWN_CHANNEL;
@@ -186,13 +209,7 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
             return res;
         }
 
-        thread_t *thread = nullptr;
-        for (auto &t : channel->threads) {
-            if (std::string_view(t.uuid, kUuidWireSize) == std::string_view(ctx.thread_uuid, kUuidWireSize)) {
-                thread = &t;
-                break;
-            }
-        }
+        thread_t *thread = find_thread_by_uuid(*channel, std::string_view(ctx.thread_uuid, kUuidWireSize));
 
         if (!thread) {
             res.response.code = ERR_UNKNOWN_THREAD;
@@ -208,16 +225,23 @@ Result Business::handle_create(int fd, std::string_view payload_bytes)
 
         thread->replies.push_back(reply);
 
-        // Response: uuid(36) + creator_uuid(36) + body(512) + timestamp(4)
+        server_event_reply_created(thread->uuid, user_uuid.c_str(), reply.body);
+
         std::vector<uint8_t> payload;
-        payload.reserve(kUuidWireSize + kUuidWireSize + MAX_BODY_LENGTH + sizeof(uint32_t));
-        append_uuid36(payload, reply.uuid);
+        payload.reserve(kUuidWireSize + kUuidWireSize + sizeof(uint64_t) + MAX_BODY_LENGTH);
+        append_fixed(payload, ctx.thread_uuid, kUuidWireSize);
         append_uuid36(payload, reply.creator_uuid);
+        append_i64(payload, static_cast<int64_t>(reply.timestamp));
         append_fixed(payload, reply.body, MAX_BODY_LENGTH);
-        append_u32(payload, static_cast<uint32_t>(reply.timestamp));
 
         res.response.code = RES_REPLY_CREATED;
         res.response.bytes = make_message(res.response.code, payload);
+
+        Push evt;
+        evt.packet.code = EVT_REPLY_CREATED;
+        evt.packet.bytes = make_message(evt.packet.code, payload);
+        evt.fds = team_member_fds(_data, *team);
+        res.pushes.push_back(std::move(evt));
         return res;
     }
 

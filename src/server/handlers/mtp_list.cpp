@@ -7,8 +7,6 @@
 
 #include "mtp.hpp"
 
-#include <cstring>
-
 #include "mtp_detail.hpp"
 
 #include "protocole.hpp"
@@ -28,9 +26,8 @@ Result Business::handle_list(int fd)
         return res;
     }
 
-    const std::string user_uuid = it->second;
     const auto ctx_it = _data.client_contexts.find(fd);
-    
+
     if (ctx_it == _data.client_contexts.end()) {
         res.response.code = ERR_INVALID_COMMAND;
         res.response.bytes = make_message(res.response.code, {});
@@ -40,27 +37,16 @@ Result Business::handle_list(int fd)
     const client_context_t &ctx = ctx_it->second;
     const uint8_t level = ctx.level;
 
-    // LIST_TEAMS: list all teams user is subscribed to
     if (level == USE_NONE) {
         std::vector<uint8_t> payload;
-        std::vector<team_t *> subscribed_teams;
 
-        // Find all teams the user is subscribed to
-        for (auto &team : _data.teams) {
-            if (is_subscribed_to(team, user_uuid)) {
-                subscribed_teams.push_back(&team);
-            }
-        }
+        payload.reserve(4 + _data.teams.size() * (kUuidWireSize + kNameWireSize + kDescWireSize));
+        append_u32(payload, static_cast<uint32_t>(_data.teams.size()));
 
-        // Count header
-        payload.reserve(4 + subscribed_teams.size() * (kUuidWireSize + kNameWireSize + kDescWireSize));
-        append_u32(payload, static_cast<uint32_t>(subscribed_teams.size()));
-
-        // Each team: uuid(36) + name(32) + desc(255)
-        for (const auto *team : subscribed_teams) {
-            append_uuid36(payload, team->uuid);
-            append_name32(payload, team->name);
-            append_fixed(payload, team->description, kDescWireSize);
+        for (const auto &team : _data.teams) {
+            append_uuid36(payload, team.uuid);
+            append_name32(payload, team.name);
+            append_fixed(payload, team.description, kDescWireSize);
         }
 
         res.response.code = RES_LIST_TEAMS;
@@ -68,7 +54,6 @@ Result Business::handle_list(int fd)
         return res;
     }
 
-    // LIST_CHANNELS: list all channels in current team
     if (level == USE_TEAM) {
         team_t *team = find_team_by_uuid(_data, std::string_view(ctx.team_uuid, kUuidWireSize));
         if (!team) {
@@ -79,11 +64,9 @@ Result Business::handle_list(int fd)
 
         std::vector<uint8_t> payload;
         payload.reserve(4 + team->channels.size() * (kUuidWireSize + kNameWireSize + kDescWireSize));
-        
-        // Count header
+
         append_u32(payload, static_cast<uint32_t>(team->channels.size()));
 
-        // Each channel: uuid(36) + name(32) + desc(255)
         for (const auto &channel : team->channels) {
             append_uuid36(payload, channel.uuid);
             append_name32(payload, channel.name);
@@ -95,7 +78,6 @@ Result Business::handle_list(int fd)
         return res;
     }
 
-    // LIST_THREADS: list all threads in current channel
     if (level == USE_CHANNEL) {
         team_t *team = find_team_by_uuid(_data, std::string_view(ctx.team_uuid, kUuidWireSize));
         if (!team) {
@@ -104,13 +86,7 @@ Result Business::handle_list(int fd)
             return res;
         }
 
-        channel_t *channel = nullptr;
-        for (auto &c : team->channels) {
-            if (std::string_view(c.uuid, kUuidWireSize) == std::string_view(ctx.channel_uuid, kUuidWireSize)) {
-                channel = &c;
-                break;
-            }
-        }
+        channel_t *channel = find_channel_by_uuid(*team, std::string_view(ctx.channel_uuid, kUuidWireSize));
 
         if (!channel) {
             res.response.code = ERR_UNKNOWN_CHANNEL;
@@ -119,18 +95,16 @@ Result Business::handle_list(int fd)
         }
 
         std::vector<uint8_t> payload;
-        payload.reserve(4 + channel->threads.size() * (kUuidWireSize + kUuidWireSize + kNameWireSize + MAX_BODY_LENGTH + sizeof(uint32_t)));
-        
-        // Count header
+        payload.reserve(4 + channel->threads.size() * (kUuidWireSize + kUuidWireSize + sizeof(uint64_t) + kNameWireSize + MAX_BODY_LENGTH));
+
         append_u32(payload, static_cast<uint32_t>(channel->threads.size()));
 
-        // Each thread: uuid(36) + creator_uuid(36) + title(32) + body(512) + timestamp(4)
         for (const auto &thread : channel->threads) {
             append_uuid36(payload, thread.uuid);
             append_uuid36(payload, thread.creator_uuid);
+            append_i64(payload, static_cast<int64_t>(thread.timestamp));
             append_name32(payload, thread.title);
             append_fixed(payload, thread.body, MAX_BODY_LENGTH);
-            append_u32(payload, static_cast<uint32_t>(thread.timestamp));
         }
 
         res.response.code = RES_LIST_THREADS;
@@ -138,7 +112,6 @@ Result Business::handle_list(int fd)
         return res;
     }
 
-    // LIST_REPLIES: list all replies in current thread
     if (level == USE_THREAD) {
         team_t *team = find_team_by_uuid(_data, std::string_view(ctx.team_uuid, kUuidWireSize));
         if (!team) {
@@ -147,13 +120,7 @@ Result Business::handle_list(int fd)
             return res;
         }
 
-        channel_t *channel = nullptr;
-        for (auto &c : team->channels) {
-            if (std::string_view(c.uuid, kUuidWireSize) == std::string_view(ctx.channel_uuid, kUuidWireSize)) {
-                channel = &c;
-                break;
-            }
-        }
+        channel_t *channel = find_channel_by_uuid(*team, std::string_view(ctx.channel_uuid, kUuidWireSize));
 
         if (!channel) {
             res.response.code = ERR_UNKNOWN_CHANNEL;
@@ -161,13 +128,7 @@ Result Business::handle_list(int fd)
             return res;
         }
 
-        thread_t *thread = nullptr;
-        for (auto &t : channel->threads) {
-            if (std::string_view(t.uuid, kUuidWireSize) == std::string_view(ctx.thread_uuid, kUuidWireSize)) {
-                thread = &t;
-                break;
-            }
-        }
+        thread_t *thread = find_thread_by_uuid(*channel, std::string_view(ctx.thread_uuid, kUuidWireSize));
 
         if (!thread) {
             res.response.code = ERR_UNKNOWN_THREAD;
@@ -176,17 +137,15 @@ Result Business::handle_list(int fd)
         }
 
         std::vector<uint8_t> payload;
-        payload.reserve(4 + thread->replies.size() * (kUuidWireSize + kUuidWireSize + MAX_BODY_LENGTH + sizeof(uint32_t)));
-        
-        // Count header
+        payload.reserve(4 + thread->replies.size() * (kUuidWireSize + kUuidWireSize + sizeof(uint64_t) + MAX_BODY_LENGTH));
+
         append_u32(payload, static_cast<uint32_t>(thread->replies.size()));
 
-        // Each reply: uuid(36) + creator_uuid(36) + body(512) + timestamp(4)
         for (const auto &reply : thread->replies) {
-            append_uuid36(payload, reply.uuid);
+            append_fixed(payload, ctx.thread_uuid, kUuidWireSize);
             append_uuid36(payload, reply.creator_uuid);
+            append_i64(payload, static_cast<int64_t>(reply.timestamp));
             append_fixed(payload, reply.body, MAX_BODY_LENGTH);
-            append_u32(payload, static_cast<uint32_t>(reply.timestamp));
         }
 
         res.response.code = RES_LIST_REPLIES;

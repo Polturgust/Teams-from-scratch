@@ -131,22 +131,11 @@ Result Business::handle_messages(int fd, std::string_view user_uuid)
     std::vector<uint8_t> payload;
     append_u32(payload, static_cast<uint32_t>(msgs.size()));
 
-    auto htonll = [](uint64_t v) -> uint64_t {
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-        return (static_cast<uint64_t>(htonl(static_cast<uint32_t>(v & 0xFFFFFFFFULL))) << 32) |
-            htonl(static_cast<uint32_t>(v >> 32));
-#else
-        return v;
-#endif
-    };
-
     for (const auto *m : msgs) {
         append_fixed(payload, m->sender_uuid, kUuidWireSize);
         append_fixed(payload, m->receiver_uuid, kUuidWireSize);
 
-        const int64_t ts = static_cast<int64_t>(m->timestamp);
-        const uint64_t ts_be = htonll(static_cast<uint64_t>(ts));
-        append_fixed(payload, &ts_be, sizeof(ts_be));
+        append_i64(payload, static_cast<int64_t>(m->timestamp));
 
         append_fixed(payload, m->body, MAX_BODY_LENGTH);
     }
