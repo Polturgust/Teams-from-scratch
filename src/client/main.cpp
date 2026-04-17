@@ -8,7 +8,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
-#include "../Client/Client.hpp"
+#include "../client/Client.hpp"
 
 static void print_help(void)
 {
