@@ -23,6 +23,7 @@
     #include <sys/socket.h>
 
     #include "../../include/protocole.hpp"
+    #include "../../libs/myteams/logging_client.h"
     #include "Helpers.hpp"
 
 class Client {
