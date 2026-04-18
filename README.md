@@ -152,4 +152,4 @@ The script covers: multi-client login, team/channel/thread/reply creation, priva
 
 ## Protocol
 
-See [`docs/RFC.md`](docs/RFC.md) for the full MTP/1.0 specification.
+See [`doc/RFC.md`](doc/RFC.md) for the full MTP/1.0 specification.
