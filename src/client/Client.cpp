@@ -225,26 +225,25 @@ Client::ParsedCommand Client::_parse_line(const std::string &line)
         while (i < line.size() && line[i] == ' ') ++i;
         if (i >= line.size()) break;
 
-        if (line[i] != '"') {
-            result.valid = false;
-            result.error = "Arguments must be enclosed in double quotes";
-            return result;
-        }
-        ++i;
         std::string arg;
-        bool closed = false;
-        while (i < line.size()) {
-            if (line[i] == '"') {
-                closed = true;
-                ++i;
-                break;
+        if (line[i] == '"') {
+            ++i;
+            bool closed = false;
+            while (i < line.size()) {
+                if (line[i] == '"') {
+                    closed = true;
+                    ++i;
+                    break;
+                }
+                arg.push_back(line[i++]);
             }
-            arg.push_back(line[i++]);
-        }
-        if (!closed) {
-            result.valid = false;
-            result.error = "Unclosed double quote in argument";
-            return result;
+            if (!closed) {
+                result.valid = false;
+                result.error = "Unclosed double quote in argument";
+                return result;
+            }
+        } else {
+            while (i < line.size() && line[i] != ' ') arg.push_back(line[i++]);
         }
         result.args.push_back(arg);
     }
