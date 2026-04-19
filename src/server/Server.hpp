@@ -5,6 +5,9 @@
 ** Server.hpp
 */
 
+#ifndef SERVER_HPP
+#define SERVER_HPP
+
 #include <map>
 #include <vector>
 #include <string>
@@ -49,3 +52,5 @@ private:
     void _send_result(int fd, const mtp::Result &result);
     void _queue_bytes(int fd, const std::vector<uint8_t> &bytes);
 };
+
+#endif
