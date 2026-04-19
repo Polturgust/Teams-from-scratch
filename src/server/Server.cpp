@@ -251,7 +251,6 @@ void Server::_dispatch(int fd, uint16_t cmd, const std::vector<uint8_t> &payload
     }
 
     mtp::Result r;
-
     switch (cmd) {
         case CMD_LOGIN:
             r = _business.handle_login(fd, extract_sv(payload, 0, payload.size()));
@@ -297,7 +296,6 @@ void Server::_dispatch(int fd, uint16_t cmd, const std::vector<uint8_t> &payload
         case CMD_INFO:
             r = _business.handle_info(fd);
             break;
-            return;
         default: {
             uint16_t c = htons(ERR_INVALID_COMMAND);
             uint32_t s = htonl(0);
