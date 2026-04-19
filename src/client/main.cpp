@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     }
     int port = std::atoi(argv[2]);
     if (port <= 0 || port > 65535) {
-        std::cerr << "Invalid port number." << std::endl;
+        std::cout << "Invalid port number." << std::endl;
         return 84;
     }
     Client client(argv[1], port);

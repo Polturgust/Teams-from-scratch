@@ -10,7 +10,7 @@
 void Client::_cmd_login(const ParsedCommand &cmd)
 {
     if (cmd.args.size() != 1) {
-        std::cerr << "Usage: /login \"user_name\"" << std::endl;
+        std::cout << "Usage: /login \"user_name\"" << std::endl;
         return;
     }
     std::vector<uint8_t> payload;
@@ -33,7 +33,7 @@ void Client::_cmd_users(const ParsedCommand &cmd)
 void Client::_cmd_user(const ParsedCommand &cmd)
 {
     if (cmd.args.size() != 1) {
-        std::cerr << "Usage: /user \"user_uuid\"" << std::endl;
+        std::cout << "Usage: /user \"user_uuid\"" << std::endl;
         return;
     }
     std::vector<uint8_t> payload;
@@ -44,7 +44,7 @@ void Client::_cmd_user(const ParsedCommand &cmd)
 void Client::_cmd_send(const ParsedCommand &cmd)
 {
     if (cmd.args.size() != 2) {
-        std::cerr << "Usage: /send \"user_uuid\" \"message_body\"" << std::endl;
+        std::cout << "Usage: /send \"user_uuid\" \"message_body\"" << std::endl;
         return;
     }
     std::vector<uint8_t> payload;
@@ -56,7 +56,7 @@ void Client::_cmd_send(const ParsedCommand &cmd)
 void Client::_cmd_messages(const ParsedCommand &cmd)
 {
     if (cmd.args.size() != 1) {
-        std::cerr << "Usage: /messages \"user_uuid\"" << std::endl;
+        std::cout << "Usage: /messages \"user_uuid\"" << std::endl;
         return;
     }
     std::vector<uint8_t> payload;
@@ -67,7 +67,7 @@ void Client::_cmd_messages(const ParsedCommand &cmd)
 void Client::_cmd_subscribe(const ParsedCommand &cmd)
 {
     if (cmd.args.size() != 1) {
-        std::cerr << "Usage: /subscribe \"team_uuid\"" << std::endl;
+        std::cout << "Usage: /subscribe \"team_uuid\"" << std::endl;
         return;
     }
     std::vector<uint8_t> payload;
@@ -84,7 +84,7 @@ void Client::_cmd_subscribed(const ParsedCommand &cmd)
         payload.push_back(0x01);
         pack_fixed(payload, cmd.args[0], 36);
     } else {
-        std::cerr << "Usage: /subscribed [\"team_uuid\"]" << std::endl;
+        std::cout << "Usage: /subscribed [\"team_uuid\"]" << std::endl;
         return;
     }
     _send_packet(CMD_SUBSCRIBED, payload.data(), static_cast<uint32_t>(payload.size()));
@@ -93,7 +93,7 @@ void Client::_cmd_subscribed(const ParsedCommand &cmd)
 void Client::_cmd_unsubscribe(const ParsedCommand &cmd)
 {
     if (cmd.args.size() != 1) {
-        std::cerr << "Usage: /unsubscribe \"team_uuid\"" << std::endl;
+        std::cout << "Usage: /unsubscribe \"team_uuid\"" << std::endl;
         return;
     }
     std::vector<uint8_t> payload;
@@ -136,7 +136,7 @@ void Client::_cmd_use(const ParsedCommand &cmd)
         _use_channel_uuid = cmd.args[1];
         _use_thread_uuid  = cmd.args[2];
     } else {
-        std::cerr << "Usage: /use [\"team_uuid\" [\"channel_uuid\" [\"thread_uuid\"]]]" << std::endl;
+        std::cout << "Usage: /use [\"team_uuid\" [\"channel_uuid\" [\"thread_uuid\"]]]" << std::endl;
         return;
     }
     _send_packet(CMD_USE, payload.data(), static_cast<uint32_t>(payload.size()));
@@ -149,7 +149,7 @@ void Client::_cmd_create(const ParsedCommand &cmd)
     switch (_use_level) {
     case USE_NONE:
         if (cmd.args.size() != 2) {
-            std::cerr << "Usage: /create \"team_name\" \"team_description\"" << std::endl;
+            std::cout << "Usage: /create \"team_name\" \"team_description\"" << std::endl;
             return;
         }
         pack_fixed(payload, cmd.args[0], 32);
@@ -157,7 +157,7 @@ void Client::_cmd_create(const ParsedCommand &cmd)
         break;
     case USE_TEAM:
         if (cmd.args.size() != 2) {
-            std::cerr << "Usage: /create \"channel_name\" \"channel_description\"" << std::endl;
+            std::cout << "Usage: /create \"channel_name\" \"channel_description\"" << std::endl;
             return;
         }
         pack_fixed(payload, cmd.args[0], 32);
@@ -165,7 +165,7 @@ void Client::_cmd_create(const ParsedCommand &cmd)
         break;
     case USE_CHANNEL:
         if (cmd.args.size() != 2) {
-            std::cerr << "Usage: /create \"thread_title\" \"thread_body\"" << std::endl;
+            std::cout << "Usage: /create \"thread_title\" \"thread_body\"" << std::endl;
             return;
         }
         pack_fixed(payload, cmd.args[0], 32);
@@ -173,7 +173,7 @@ void Client::_cmd_create(const ParsedCommand &cmd)
         break;
     case USE_THREAD:
         if (cmd.args.size() != 1) {
-            std::cerr << "Usage: /create \"comment_body\"" << std::endl;
+            std::cout << "Usage: /create \"comment_body\"" << std::endl;
             return;
         }
         pack_fixed(payload, cmd.args[0], 512);

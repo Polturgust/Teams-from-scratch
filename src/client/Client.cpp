@@ -20,7 +20,7 @@ void Client::run()
         int ret = poll(fds, 2, -1);
         if (ret < 0) {
             if (errno == EINTR) continue;
-            std::cerr << "poll: " << strerror(errno) << std::endl;
+            std::cout << "poll: " << strerror(errno) << std::endl;
             break;
         }
 
@@ -34,7 +34,7 @@ void Client::run()
             _handle_server_read();
 
         if (fds[1].revents & (POLLHUP | POLLERR)) {
-            std::cerr << "Server disconnected." << std::endl;
+            std::cout << "Server disconnected." << std::endl;
             _running = false;
         }
     }

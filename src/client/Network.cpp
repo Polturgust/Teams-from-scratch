@@ -12,7 +12,7 @@ void Client::_handle_server_read()
     uint8_t tmp[4096];
     ssize_t n = read(_fd, tmp, sizeof(tmp));
     if (n <= 0) {
-        std::cerr << "Server disconnected." << std::endl;
+        std::cout << "Server disconnected." << std::endl;
         _running = false;
         return;
     }

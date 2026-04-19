@@ -104,7 +104,7 @@ void Client::_handle_response(uint16_t code, const std::vector<uint8_t> &p)
     if (code == ERR_UNKNOWN_CHANNEL) { client_error_unknown_channel(read_fixed(p, off, 36).c_str());                            return; }
     if (code == ERR_UNKNOWN_THREAD)  { client_error_unknown_thread(read_fixed(p, off, 36).c_str());                             return; }
     if (code == ERR_UNKNOWN_USER)    { client_error_unknown_user(read_fixed(p, off, 36).c_str());                               return; }
-    if (code == ERR_INVALID_COMMAND) { std::cerr << "invalid command\n";                                                        return; }
+    if (code == ERR_INVALID_COMMAND) { std::cout << "invalid command\n";                                                        return; }
     if (code == EVT_USER_LOGGED_IN)  { auto u = read_fixed(p,off,36), n = read_fixed(p,off,32); client_event_logged_in(u.c_str(), n.c_str());  return; }
     if (code == EVT_USER_LOGGED_OUT) { auto u = read_fixed(p,off,36), n = read_fixed(p,off,32); client_event_logged_out(u.c_str(), n.c_str()); return; }
     if (code == EVT_MESSAGE_RECEIVED){

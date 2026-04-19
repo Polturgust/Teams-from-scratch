@@ -24,5 +24,5 @@ void Client::_dispatch(const ParsedCommand &cmd)
     if (cmd.name == "list")        { _cmd_list(cmd); return; }
     if (cmd.name == "info")        { _cmd_info(cmd); return; }
 
-    std::cerr << "Unknown command: /" << cmd.name << ". Type /help for help." << std::endl;
+    std::cout << "Unknown command: /" << cmd.name << ". Type /help for help." << std::endl;
 }
