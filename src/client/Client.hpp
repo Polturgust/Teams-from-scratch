@@ -15,13 +15,11 @@
     #include <cstdlib>
     #include <cstdint>
     #include <iostream>
-
     #include <poll.h>
     #include <unistd.h>
     #include <arpa/inet.h>
     #include <netinet/in.h>
     #include <sys/socket.h>
-
     #include "../../include/protocole.hpp"
     #include "../../libs/myteams/logging_client.h"
     #include "Helpers.hpp"
@@ -33,8 +31,8 @@ class Client {
         void run();
 
     private:
-        int          _fd;
-        bool         _running;
+        int _fd;
+        bool _running;
         std::string  _user_uuid;
 
         std::vector<uint8_t> _recv_buf;
@@ -50,10 +48,10 @@ class Client {
 
         // Command parsing
         struct ParsedCommand {
-            std::string              name;
+            std::string name;
             std::vector<std::string> args;
-            bool                     valid = true;
-            std::string              error;
+            bool valid = true;
+            std::string error;
         };
         ParsedCommand _parse_line(const std::string &line);
         void          _dispatch(const ParsedCommand &cmd);
@@ -81,6 +79,7 @@ class Client {
         std::string _use_team_uuid;
         std::string _use_channel_uuid;
         std::string _use_thread_uuid;
+        std::string _stdin_buf;
 };
 
 #endif // CLIENT_HPP

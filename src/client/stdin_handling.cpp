@@ -9,17 +9,28 @@
 
 void Client::_handle_stdin()
 {
-    std::string line;
-    if (!std::getline(std::cin, line)) {
+    char buf[4096];
+    ssize_t n = read(STDIN_FILENO, buf, sizeof(buf));
+    if (n <= 0) {
         _running = false;
         return;
     }
-    if (line.empty()) return;
 
-    ParsedCommand cmd = _parse_line(line);
-    if (!cmd.valid) {
-        std::cerr << "Parse error: " << cmd.error << std::endl;
-        return;
+    _stdin_buf.append(buf, n);
+
+    size_t pos;
+    while ((pos = _stdin_buf.find('\n')) != std::string::npos) {
+        std::string line = _stdin_buf.substr(0, pos);
+        _stdin_buf.erase(0, pos + 1);
+
+        if (line.empty())
+            continue;
+
+        ParsedCommand cmd = _parse_line(line);
+        if (!cmd.valid) {
+            std::cout << "Parse error: " << cmd.error << std::endl;
+            continue;
+        }
+        _dispatch(cmd);
     }
-    _dispatch(cmd);
 }
