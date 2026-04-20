@@ -38,7 +38,7 @@ OBJ_CLIENT	=	$(SRC_CLIENT:.cpp=.o)
 SERVER		=	myteams_server
 CLIENT		=	myteams_cli
 
-LDFLAGS		=	-L./libs/myteams -Wl,-rpath,'$$ORIGIN/libs/myteams'
+LDFLAGS		=	-L./libs/myteams
 LDLIBS_SRV	=	-lmyteams -luuid
 LDLIBS_CLI	=	-lmyteams -luuid
 
