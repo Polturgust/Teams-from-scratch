@@ -11,8 +11,10 @@
     #include <cstdint>
     #include <arpa/inet.h>
 
+/** @brief Wire header size in bytes (2-byte code + 4-byte payload size). */
 #define HEADER_SIZE 6
 
+/** @brief Request command codes sent by the client. */
 enum Command : uint16_t {
     CMD_LOGIN = 0x01,
     CMD_LOGOUT = 0x02,
@@ -29,6 +31,7 @@ enum Command : uint16_t {
     CMD_INFO = 0x0D,
 };
 
+/** @brief Successful response codes sent by the server. */
 enum Response : uint16_t {
     RES_LOGIN_OK = 0x10,
     RES_LOGOUT_OK = 0x11,
@@ -54,6 +57,7 @@ enum Response : uint16_t {
     RES_USER_DETAILS = 0x25,
 };
 
+/** @brief Error response codes sent by the server. */
 enum Error : uint16_t {
     ERR_UNAUTHORIZED = 0xE0,
     ERR_UNKNOWN_TEAM = 0xE1,
@@ -65,6 +69,7 @@ enum Error : uint16_t {
     ERR_INVALID_COMMAND = 0xE7,
 };
 
+/** @brief Asynchronous event codes pushed by the server to clients. */
 enum Event : uint16_t {
     EVT_MESSAGE_RECEIVED = 0xF0,
     EVT_TEAM_CREATED = 0xF1,
@@ -75,6 +80,7 @@ enum Event : uint16_t {
     EVT_USER_LOGGED_OUT = 0xF6,
 };
 
+/** @brief Context depth used by /use-scoped commands. */
 enum UseLevel : uint8_t {
     USE_NONE = 0x00,
     USE_TEAM = 0x01,

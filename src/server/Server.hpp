@@ -17,23 +17,38 @@
 #include "../../include/protocole.hpp"
 #include "../../include/mtp.hpp"
 
+/** @brief Runtime socket state tracked for each connected client. */
 struct ClientState {
+    /** Client socket file descriptor. */
     int fd;
+    /** Incremental receive buffer for framed protocol parsing. */
     std::vector<uint8_t> recv_buffer;
+    /** Pending bytes queued for non-blocking writes. */
     std::vector<uint8_t> send_buffer;
+    /** Context selected via /use command. */
     UseLevel use_level = USE_NONE;
+    /** Selected team UUID for contextual operations. */
     std::string use_team_uuid;
+    /** Selected channel UUID for contextual operations. */
     std::string use_channel_uuid;
+    /** Selected thread UUID for contextual operations. */
     std::string use_thread_uuid;
 };
 
+/** @brief Poll-driven TCP server handling protocol framing and command dispatch. */
 class Server {
 public:
+    /** @brief Create server listening configuration for a TCP port. */
     Server(int port);
+    /** @brief Cleanly release server resources. */
     ~Server();
+    /** @brief Start the main accept/read/write event loop. */
     void run();
+    /** @brief Request graceful shutdown of the event loop. */
     void shutdown();
+    /** Public shared server data manipulated by business handlers. */
     server_data_t data;
+    /** Connected client states indexed by socket fd. */
     std::map<int, ClientState> clients;
 
 private:

@@ -20,6 +20,7 @@
 
 #include "data.hpp"
 
+/** @brief Internal helper namespace for protocol serialization and lookups. */
 namespace mtp::detail {
 
 inline constexpr std::size_t kHeaderSize = 6;

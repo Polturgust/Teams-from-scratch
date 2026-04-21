@@ -24,10 +24,14 @@
     #include "../../libs/myteams/logging_client.h"
     #include "Helpers.hpp"
 
+/** @brief Interactive CLI client for MyTeams protocol. */
 class Client {
     public:
+        /** @brief Construct and connect client to server endpoint. */
         Client(const std::string &ip, int port);
+        /** @brief Destroy client and close resources. */
         ~Client();
+        /** @brief Start main polling loop for stdin and server socket. */
         void run();
 
     private:
@@ -47,10 +51,15 @@ class Client {
         void _send_packet(uint16_t cmd, const void *payload = nullptr, uint32_t size = 0);
 
         // Command parsing
+        /** @brief Parsed representation of a slash command line. */
         struct ParsedCommand {
+            /** Command name without leading slash. */
             std::string name;
+            /** Positional arguments in user-entered order. */
             std::vector<std::string> args;
+            /** Parsing validity flag. */
             bool valid = true;
+            /** Error text when parsing fails. */
             std::string error;
         };
         ParsedCommand _parse_line(const std::string &line);

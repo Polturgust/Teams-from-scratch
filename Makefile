@@ -58,4 +58,10 @@ fclean:		clean
 
 re:			fclean all
 
-.PHONY:		all clean fclean re
+doc:
+	doxygen Doxyfile
+
+doc-clean:
+	rm -rf doc/doxygen/html doc/doxygen/latex
+
+.PHONY:		all clean fclean re doc doc-clean

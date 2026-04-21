@@ -45,6 +45,10 @@ vgcore.*
 # Logs
 *.log
 
+# Doxygen generated documentation
+doc/doxygen/html/
+doc/doxygen/latex/
+
 # Build artifacts
 *.o
 *.a
