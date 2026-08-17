@@ -5,7 +5,7 @@
 ![Platform](https://img.shields.io/badge/platform-Linux-333333?style=for-the-badge&logo=linux&logoColor=white)
 ![Build](https://img.shields.io/badge/build-Makefile-A42E2B?style=for-the-badge&logo=gnu&logoColor=white)
 
-**A chat platform like Microsoft Teams — rebuilt from scratch, and fully yours.**
+**A chat platform like Microsoft Teams — rebuilt from scratch.**
 
 MyTeams lets a group of people talk to each other over a network: send private
 messages, create teams, open discussion channels, start threads, and reply to
